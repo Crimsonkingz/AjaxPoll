@@ -1,0 +1,12 @@
+{
+  "name": "AjaxPoll",
+  "description": "Ajax Poll with NodeJS and JSONStream",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "node ./server2.js"
+  },
+  "devDependencies": {
+    "JSONStream": "^1.0.7",
+    "fs": "0.0.2"
+  }
+}

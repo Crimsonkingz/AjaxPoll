@@ -1,0 +1,42 @@
+#container {
+	width: 100%;
+	height: 100%;
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		-webkit-transform: translate(-50%,-50%);
+		   -moz-transform: translate(-50%,-50%);
+		    -ms-transform: translate(-50%,-50%);
+		     -o-transform: translate(-50%,-50%);
+		        transform: translate(-50%,-50%);
+}
+
+#option1 {
+	float: left;
+	background-color: #700;
+}
+
+#option2 {
+	float: right;
+	background-color: #007;
+}
+
+#results {
+	visibility: hidden;
+	width: 500px;
+	height: 200px;
+	left: calc(50% - 250px);
+	background-color: #ddd;
+}
+
+.voteBox, .resultsBox {
+	color: white;
+	position: relative;
+	width: 300px;
+	height: 300px;
+	margin: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+}
