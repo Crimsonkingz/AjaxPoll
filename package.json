@@ -3,7 +3,7 @@
   "description": "Ajax Poll with NodeJS and JSONStream",
   "version": "0.0.1",
   "scripts": {
-    "start": "node ./server2.js"
+    "start": "node ./nodeServer.js"
   },
   "devDependencies": {
     "JSONStream": "^1.0.7",

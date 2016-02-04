@@ -14,11 +14,13 @@ var registerVote = function() {
 	 	var xhttp = new XMLHttpRequest();
  		xhttp.onreadystatechange = function() {
 		    if (xhttp.readyState == 4 && xhttp.status == 200) {
-		    	console.log(JSON.parse(xhttp.responseText));
+		    	console.log("replied");
 				displayResults(xhttp);
+
+				// console.log(xhttp);
 		    }
 		};
-		xhttp.open("GET", "poll_results.json", true);
+		xhttp.open("GET", "poll_results.json" + "?option="+ choice, true);
 		xhttp.send();
 			
 
@@ -26,8 +28,8 @@ var registerVote = function() {
 
 var displayResults = function(xhttp) {
 	var jsonObj = JSON.parse(xhttp.responseText);
-	var resultStr = "Red: " + jsonObj.red + " " + "Blue: " + jsonObj.blue;
-	results.innerHTML = resultsStr;
+	var resultStr = "Red: " + jsonObj.red + "<br>" + "Blue: " + jsonObj.blue;
+	results.innerHTML = resultStr;
 	results.style.visibility = "visible";
 };
 

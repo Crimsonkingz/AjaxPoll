@@ -1,54 +1,112 @@
 var http = require('http');
+var url = require('url');
 var fs = require('fs');
+var jsonStream = require('JSONStream');
 
+var scriptsLoaded = false;
+var i = 0;
 
-// 404 response
-var sendError = function(response) {
-	response.writeHead(404, {"Content-Type": "text/plain"});
-	response.write('Error 404: Page eaten by goblins');
-	response.end();
-};
+http.createServer(function(request, response) {
+    i++;
+    console.log('Request #'+i+': '+request.url);
 
-// Has to be function(request, response) CANNOT be (response, request)
-var serverResponse = function(request, response){
-	console.log("got a request");
-	console.log(request.url);
-	if (request.method == 'GET' && request.url == '/') {
+    if (request.url.indexOf('main.html') != -1) { 
 
-		fs.readFile(__dirname + "/css/stylesheet.css", function(err, data){
-			if (err) {
-				console.log(err);
-			}
-			else {
-				console.log('/css/stylesheet.css: fs.readFile is successful');
-                response.setHeader("Content-Length", data.length);
-                response.setHeader("Content-Type", 'text/css');
-                response.statusCode = 200;
+      fs.readFile(__dirname + '/main.html', function (err, data) {
+        if (err) {
+            console.log(err);
+        }
+        response.writeHead(200, {'Content-Type': 'text/html'});
+        response.write(data);
+        response.end();
+      });
+
+    }
+    // Specified script.js as opposed to .js due to crossover
+    // with .json
+    else if (request.url.indexOf('script.js') != -1) {
+        fs.readFile(__dirname + '/js/script.js', function (err, data) {
+            if (err) {
+                console.log(err);
+            }
+            else {
+                console.log('/js/script.js: fs.readFile is successful');
+                scriptsLoaded = true;
+                response.writeHead(200, {'Content-Type': 'text/javascript'});
+                response.write(data);
+                response.end();
                 
-			}
-		});
-		fs.readFile(__dirname + "/js/script.js", function(err, data){
-			if (err) {
-				console.log(err);
-			}
-			else {
-				console.log('/js/script.js: fs.readFile is successful');
-                response.setHeader("Content-Length", data.length);
-                response.setHeader("Content-Type", 'text/javascript');
-                response.statusCode = 200;
                 
-			}
-		});
-		response.end(data);
-		response.writeHead(200, {"Content-Type":"text/html"});
-		// fs.createReadStream("./main.html").pipe(response);
-		// response.write("")
+            }
+        });
+    }
+    else if (request.url.indexOf('.css') != -1) {
+        fs.readFile(__dirname + '/css/stylesheet.css', function (err, data) {
+            if (err) {
+                console.log(err);
+            }
+            else {
+                console.log('/css/stylesheet.css: fs.readFile is successful');
+                response.writeHead(200, {'Content-Type': 'text/css'});
+                response.write(data);
+                response.end();              
+                
+            }
+        });
+    }
+    else if (request.url.indexOf('json') != -1) {
+        var redCount = 0,
+            blueCount = 0,
+            pollData = {};
 
-	}
-	else {
-		sendError(response);
-	}
-};
+            // For getting query strings
+            var url_parts = url.parse(request.url, true);
+            var query = url_parts.query;
+            // do query.QUERYKEY            
+            var optionChosen = query.option;
+            console.log("User chose option " + optionChosen);
 
-http.createServer(serverResponse).listen(3000);
+       var readJSON = fs.readFile(__dirname + '/poll_results.json', function (err, data) {
+             if (err) {
+                console.log(err);
+            }
+            else {
+                pollData = JSON.parse(data);
+                console.log(pollData);
+                if (optionChosen === '1') {
+                    pollData.red++;
+                    console.log("red incremented");
+                }
+                else if (optionChosen === '2') {
+                    pollData.blue++;
+                    console.log("blue incremented");
+                }
+                redCount = pollData.red;
+                blueCount = pollData.blue;
 
+                var updatedData = {
+                    "red": redCount,
+                    "blue": blueCount
+                };
+                response.on("finish", function(){
+                    // Stringify the data when writing to JSON, parse when reading
+                    fs.writeFile(__dirname + '/poll_results.json', JSON.stringify(updatedData), function (err) {
+                        if (err) {
+                            console.log(err);
+                        }
+                        else {
+                            console.log("JSON written!");
+                        }
+                    });
+                });
+
+                response.write(JSON.stringify(pollData));
+                response.end();
+            }
+        });
+
+        
+        
+    }
+   
+}).listen(3000);
