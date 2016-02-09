@@ -2,16 +2,19 @@ var http = require('http');
 var url = require('url');
 var fs = require('fs');
 var jsonStream = require('JSONStream');
+var mime = require('mime');
 
 var scriptsLoaded = false;
 var i = 0;
 
 http.createServer(function(request, response) {
     i++;
-    console.log('Request #'+i+': '+request.url);
+    console.log('Request #' + i + ': '+ request.url);
+    console.log('MIME:' + mime.lookup(request.url));
+    var mimeType = mime.lookup(request.url);
 
-    if (request.url.indexOf('main.html') != -1) { 
-
+    if (request.url.indexOf('main.html') !== -1) { 
+        console.log('HTML');
       fs.readFile(__dirname + '/main.html', function (err, data) {
         if (err) {
             console.log(err);
@@ -24,7 +27,8 @@ http.createServer(function(request, response) {
     }
     // Specified script.js as opposed to .js due to crossover
     // with .json
-    else if (request.url.indexOf('script.js') != -1) {
+    else if (request.url.indexOf('script.js') !== -1) {
+        console.log('JAVASCRIPT');
         fs.readFile(__dirname + '/js/script.js', function (err, data) {
             if (err) {
                 console.log(err);
@@ -40,7 +44,8 @@ http.createServer(function(request, response) {
             }
         });
     }
-    else if (request.url.indexOf('.css') != -1) {
+    else if (request.url.indexOf('.css') !== -1) {
+        console.log('CSS');
         fs.readFile(__dirname + '/css/stylesheet.css', function (err, data) {
             if (err) {
                 console.log(err);
@@ -54,7 +59,8 @@ http.createServer(function(request, response) {
             }
         });
     }
-    else if (request.url.indexOf('json') != -1) {
+    else if (request.url.indexOf('json') !== -1) {
+        console.log('JSON');
         var redCount = 0,
             blueCount = 0,
             pollData = {};
@@ -74,19 +80,19 @@ http.createServer(function(request, response) {
                 pollData = JSON.parse(data);
                 console.log(pollData);
                 if (optionChosen === '1') {
-                    pollData.red++;
-                    console.log("red incremented");
+                    pollData.apples++;
+                    console.log("apples incremented");
                 }
                 else if (optionChosen === '2') {
-                    pollData.blue++;
-                    console.log("blue incremented");
+                    pollData.oranges++;
+                    console.log("oranges incremented");
                 }
-                redCount = pollData.red;
-                blueCount = pollData.blue;
+                appleCount = pollData.apples;
+                orangeCount = pollData.oranges;
 
                 var updatedData = {
-                    "red": redCount,
-                    "blue": blueCount
+                    "apples": appleCount,
+                    "oranges": orangeCount
                 };
                 response.on("finish", function(){
                     // Stringify the data when writing to JSON, parse when reading
@@ -103,10 +109,25 @@ http.createServer(function(request, response) {
                 response.write(JSON.stringify(pollData));
                 response.end();
             }
-        });
-
-        
-        
+        });        
     }
-   
+    else if (request.url.match(/jpg|gif|png/)) {
+        console.log('IMAGE');
+        fs.readFile(__dirname + request.url, function (err, data) {
+            if (err) {
+                console.log(err);
+            }
+            else {
+
+                console.log('image: fs.readFile is successful');
+                response.writeHead(200, {'Content-Type': mimeType});
+                response.write(data);
+                response.end();              
+                
+            }
+        });
+    }
+   else if(request.url.indexOf('ico') !== -1) {
+        console.log('ICONS');
+   }
 }).listen(3000);
